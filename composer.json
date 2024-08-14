@@ -1,6 +1,5 @@
 {
     "require": {
-        "google/apiclient": "^2.17",
         "google/analytics-data": "^0.18.0"
     }
 }

@@ -107,8 +107,8 @@ function st_admin_dashboard()
     
 
     // Berechnung des Carbon Footprint und des Carbon Offset
-    $total_carbon_footprint = st_calculate_carbon_footprint($total_page_views+5000);
-    $carbon_footprint = st_calculate_carbon_footprint($page_views+5000);
+    $total_carbon_footprint = st_calculate_carbon_footprint($total_page_views);
+    $carbon_footprint = st_calculate_carbon_footprint($page_views);
     $carbon_offset = st_get_carbon_offset($carbon_footprint);
     $total_carbon_offset = st_get_carbon_offset($total_carbon_footprint);
 

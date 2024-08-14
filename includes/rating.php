@@ -10,8 +10,8 @@ function rating($page_views,$carbon_footprint,$carbon_offset,$rating)
             <div class="st-box">
                 <h2>Overview</h2>
                 <p><strong>Monthly Page Views:</strong> <?php echo $page_views; ?></p>
-                <p><strong>Total Carbon Footprint:</strong> <?php echo $carbon_footprint; ?> kg  CO₂</p>
-                <p><strong>Carbon Offset:</strong> <?php echo $carbon_offset; ?> kg  CO₂</p>
+                <p><strong>Total Carbon Footprint:</strong> <?php echo number_format($carbon_footprint,2); ?> kg  CO₂</p>
+                <p><strong>Carbon Offset:</strong> <?php echo number_format($carbon_offset,2); ?> $<sub style="color: gray;"> $10 per ton of CO2 offset (1000 kg)</sub></p>
                 <p><strong>Rating:</strong></p>
                 <div class="rating-system">
                     <div class="rating-header">
