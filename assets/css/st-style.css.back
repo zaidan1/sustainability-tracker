@@ -1,0 +1,107 @@
+.st-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.st-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1 1 calc(33.333% - 20px); /* 3 Boxen pro Zeile auf größeren Bildschirmen */
+    min-width: calc(33.333% - 20px);
+/*
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+    padding: 20px;
+    width: calc(50% - 20px);
+    box-sizing: border-box;
+*/
+}
+
+.st-box h2 {
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.st-box p, .st-box label, .st-box input, .st-box button {
+    margin: 10px 0;
+}
+
+#carbonFootprintChart {
+    width: 100% !important;
+    height: auto !important;
+}
+.rating-system {
+    text-align: center;
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+    color: white;
+/*    padding: 20px;
+    border-radius: 10px;*/
+}
+
+.rating-header h2 {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.rating-header p {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.rating-bar {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.rating-levels {
+    display: flex;
+    width: 115%;
+    position: relative;
+}
+
+.level 
+{
+    flex: 1;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: green; /* Text color */
+}
+
+.A-plus { background-color: #00FFFF; } /* Cyan */
+.A { background-color: #00FF00; } /* Green */
+.B { background-color: #FFFF00; } /* Yellow */
+.C { background-color: #FFA500; } /* Orange */
+.D { background-color: #FF7F50; } /* Coral */
+.E { background-color: #FF0000; } /* Red */
+.F { background-color: #8B0000; } /* Dark Red */
+
+.rating-indicator 
+{
+    position: absolute;
+    top: 23px;
+    width: 20px;
+    height: 20px;
+    border-radius: 20%;
+    background-color:green; 
+    border: 2px solid #FFFFFF;
+    transition: left 2s ease;
+}
+
+
+
+.global-average img {
+    width: 20px;
+    height: 20px;
+}
+
