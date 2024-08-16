@@ -1,0 +1,164 @@
+/* Basislayout */
+.st-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.st-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1 1 calc(100% - 10px); /* 1 Box pro Zeile auf kleinen Bildschirmen */
+    min-width: calc(100% - 10px); /* Stellt sicher, dass die Boxen auf kleinen Bildschirmen die volle Breite nutzen */
+    margin-bottom: 20px; /* Abstand zwischen den Boxen */
+}
+
+.st-box h2 {
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.st-box p, .st-box label, .st-box input, .st-box button {
+    margin: 10px 0;
+}
+
+/* Für größere Bildschirme (Tablets und Desktop) */
+@media screen and (min-width: 768px) {
+    .st-box {
+        flex: 1 1 calc(50% - 15px); /* 2 Boxen pro Zeile auf mittelgroßen Bildschirmen */
+        min-width: calc(50% - 15px);
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .st-box {
+        flex: 1 1 calc(33.333% - 20px); /* 3 Boxen pro Zeile auf großen Bildschirmen */
+        min-width: calc(33.333% - 20px);
+    }
+}
+
+#carbonFootprintChart {
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* Rating-System */
+.rating-system {
+    text-align: center;
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+.rating-header h2 {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.rating-header p {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.rating-bar {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.rating-levels {
+    display: flex;
+    width: 100%;
+    position: relative;
+}
+
+.level {
+    flex: 1;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: green; /* Textfarbe */
+}
+
+.A-plus { background-color: #00FFFF; } /* Cyan */
+.A { background-color: #00FF00; } /* Grün */
+.B { background-color: #FFFF00; } /* Gelb */
+.C { background-color: #FFA500; } /* Orange */
+.D { background-color: #FF7F50; } /* Koralle */
+.E { background-color: #FF0000; } /* Rot */
+.F { background-color: #8B0000; } /* Dunkelrot */
+
+.rating-indicator {
+    position: absolute;
+    top: 23px;
+    width: 20px;
+    height: 20px;
+    border-radius: 20%;
+    background-color: green;
+    border: 2px solid #FFFFFF;
+/*    transition: left 2s ease;*/
+}
+
+/* Globale Durchschnittsanzeige */
+.global-average img {
+    width: 20px;
+    height: 20px;
+}
+.rss-slider {
+    position: relative;
+    max-width: auto;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.rss-slide {
+    display: none;
+}
+
+.rss-slide h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.rss-slide p {
+    font-size: 14px;
+}
+
+.rss-slide .rss-date 
+{
+    font-size: 12px;
+    color: #777;
+}
+.rss-slider-nav 
+{
+    text-align: center;
+    margin-top: 10px;
+}
+
+.rss-slider-nav button 
+{
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.rss-slider-nav button:hover 
+{
+    background-color: #005a87;
+}
+

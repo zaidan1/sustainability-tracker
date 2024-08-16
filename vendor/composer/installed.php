@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '48399ddf03d4624922b665a0a93b61dc0261dbb2',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '48399ddf03d4624922b665a0a93b61dc0261dbb2',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -65,9 +65,9 @@
             'dev_requirement' => false,
         ),
         'google/gax' => array(
-            'pretty_version' => 'v1.34.0',
-            'version' => '1.34.0.0',
-            'reference' => '28aa3e95969a75b278606a88448992a6396a119e',
+            'pretty_version' => 'v1.34.1',
+            'version' => '1.34.1.0',
+            'reference' => '173f0a97323284f91fd453c4ed7ed8317ecf6cfa',
             'type' => 'library',
             'install_path' => __DIR__ . '/../google/gax',
             'aliases' => array(),
