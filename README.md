@@ -38,7 +38,7 @@ The **Sustainability Tracker Plugin** is a WordPress plugin designed to help web
 
 ## Tested up to
 
-- WordPress 6.2
+- WordPress 6.6
 
 ## Stable tag
 
