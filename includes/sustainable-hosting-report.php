@@ -24,7 +24,7 @@ function st_sustainable_hosting_report($total_carbon_footprint,$carbon_offset,$t
     
     <div class="st-box">
         <h2>Sustainable Hosting Report</h2>
-        <p><strong>Hosting Provider:</strong> <?php echo $provider; ?></p>
+        <p><strong>Hosting Provider:</strong> <?php echo esc_html($provider); ?></p>
         <p><strong>Renewable Energy Usage:</strong></p>
         <p><?php echo $renewable_energy_image; ?></p>
         <table class="form-table">

@@ -1,5 +1,7 @@
+
 # sustainability-tracker
-The **Sustainability Tracker Plugin** is a WordPress plugin designed to help website owners monitor and reduce the carbon footprint of their websites. It integrates with custom tracking solutions or Google Analytics to gather data on page views and calculates the associated carbon emissions. The plugin also offers a simple Carbon Footprint Calculator for users to estimate the environmental impact of their website based on monthly page views. With support for multiple tracking methods and easy integration, this plugin is an essential tool for those looking to make their websites more sustainable.
+The **Sustainability Tracker Plugin** is a WordPress plugin designed to help website owners monitor and reduce the carbon footprint of their websites. It integrates with custom tracking solutions or Google Analytics to gather data on page views and calculates the associated carbon emissions.
+
 
 ## Features
 
@@ -34,13 +36,21 @@ The **Sustainability Tracker Plugin** is a WordPress plugin designed to help web
 - WordPress 5.0 or higher.
 - PHP 7.0 or higher.
 
+## Tested up to
+
+- WordPress 6.2
+
+## Stable tag
+
+- 1.2.3
+
 ## Contributing
 
 We welcome contributions! If you have suggestions for new features, improvements, or bug fixes, feel free to submit a pull request or open an issue.
 
 ## License
 
-This plugin is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+This plugin is licensed under the GNU General Public License v2 (or later). See the [LICENSE](LICENSE) file for more information.
 
 ## Support
 

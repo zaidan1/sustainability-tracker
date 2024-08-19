@@ -44,10 +44,10 @@ function st_integration_green_initiatives()
        {
          // Force URL to begin with "http://" or "https://" so 'parse_url' works
            $url = preg_replace('/^(?!https?:\/\/)(.*:\/\/)/i', 'http://', $item['link']);
-           $parts = parse_url($url);
+           $parts = wp_parse_url($url);
            $host = isset($parts['host']) ? $parts['host'] : 'Unknown source in the Item';
            echo '<div class="rss-slide">';
-           echo $item_count.'/'.count($items).' - '.esc_html($host);
+           echo esc_html($item_count).'/'.count($items).' - '.esc_html($host);
            echo '<h3><a href="' . esc_url($item['link']) . '" target="_blank">' . esc_html($item['title']) . '</a></h3>';
            echo '<p>' . $item['description'] . '</p><HR>';
            echo '<span class="rss-date">' . esc_html($item['pubDate']) . '</span><HR>';
@@ -119,7 +119,7 @@ function st_integration_green_initiatives()
        echo '<div class="st-box">
               <h2>Green Initiatives Feeds</h2>
 	      <div class="rss-slider">
-		<P>'.$warn.'</p>
+		<P>'.esc_html($warn).'</p>
 	      </div>
 	    </div>';
      }

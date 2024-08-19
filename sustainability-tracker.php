@@ -54,23 +54,47 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'st_add_settings_
 
 function st_enqueue_scripts() 
 {
-  wp_enqueue_style('st-styles', ST_PLUGIN_URL . 'assets/css/st-style.css');
-  wp_enqueue_script('st-scripts', plugins_url('/assets/js/st-script.js', __FILE__), array('jquery'), '1.0', true );
-  wp_enqueue_script('chart-js', 'https://cdn.jsdelivr.net/npm/chart.js', array(), null, true);
+    // Füge die Versionsnummer für das Stylesheet hinzu
+    wp_enqueue_style(
+        'st-styles', 
+        ST_PLUGIN_URL . 'assets/css/st-style.css', 
+        array(), 
+        filemtime(plugin_dir_path(__FILE__) . 'assets/css/st-style.css') // Verwende den Datei-Timestamp als Versionsnummer
+    );
+
+    wp_enqueue_script(
+        'st-scripts', 
+        plugins_url('/assets/js/st-script.js', __FILE__), 
+        array('jquery'), 
+        '1.0', 
+        true 
+    );
+
+    wp_enqueue_script(
+        'chart-js', 
+        'https://cdn.jsdelivr.net/npm/chart.js', 
+        array(), 
+        '3.7.1', 
+        true 
+    );
+     wp_localize_script('st-scripts', 'st_ajax_object', array(
+        'st_nonce' => wp_create_nonce('st_calculate_carbon_footprint_nonce')
+    ));
 }
+
 
 // Register activation hook
 register_activation_hook(__FILE__, 'st_create_post_views_table');
 register_activation_hook(__FILE__, 'st_rss_setting');
 
 // Function to create custom tables
-function st_create_post_views_table()
+function st_create_post_views_table() 
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'st_custom_track_post_views';
 
-    // Check if the table exists already
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) 
+    // Prüfe, ob die Tabelle bereits existiert
+    if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name)) != $table_name) 
     {
         $charset_collate = $wpdb->get_charset_collate();
 
@@ -85,10 +109,12 @@ function st_create_post_views_table()
             KEY user_id (user_id)
         ) $charset_collate;";
 
+        // Lade das Upgrade-API für dbDelta
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
 }
+
 function st_rss_setting()
 {
     if (get_option('st_enable_rss_feed') === false) 
@@ -162,7 +188,7 @@ function st_admin_dashboard()
             <div class="notice notice-error is-dismissible">
                 <?php
                 foreach ($messages as $message) {
-                    echo '<p>' . $message . '</p>';
+                    echo '<p>' . esc_html($message) . '</p>';
                 }
                 ?>
             </div>
@@ -177,7 +203,7 @@ function st_admin_dashboard()
             <div class="notice notice-warning is-dismissible">
                 <?php
                 foreach ($messages as $message) {
-                    echo '<p>' . $message . '</p>';
+                    echo '<p>' . esc_html($message) . '</p>';
                 }
                 ?>
             </div>
@@ -204,136 +230,134 @@ function st_admin_dashboard()
                 <?php echo $st_green_initiatives; ?>
         </div>
     </div>
-    <script>
-        // Initialize the Chart.js variable
-        var mychar;
+<script>
+    // Initialize the Chart.js variable
+    var mychar;
 
-        document.getElementById('st-carbon-footprint-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const pageViews = document.getElementById('page-views').value;
-            const result = pageViews * 0.0002; // Example calculation
-            document.getElementById('st-carbon-footprint-result').innerText = 'Estimated Carbon Footprint: ' + result + ' kg  CO₂';
-        });
+    jQuery(document).ready(function($) 
+    {
+        var rating = "<?php echo $reating_function; ?>"; // This should be dynamically calculated
+        var ratingElement = document.getElementById("carbon-rating");
+        var ratingIndicator = document.getElementById("rating-indicator");
+        var globalAverageElement = document.getElementById("global-average");
 
-        jQuery(document).ready(function($) 
-        {
-            var rating = "<?php echo $reating_function; ?>"; // This should be dynamically calculated
-            var ratingElement = document.getElementById("carbon-rating");
-            var ratingIndicator = document.getElementById("rating-indicator");
-            var globalAverageElement = document.getElementById("global-average");
+        ratingElement.textContent = rating;
 
-            ratingElement.textContent = rating;
+        var ratingLevels = 
+	{
+            "A+": 0,
+            "A": 1,
+            "B": 2,
+            "C": 3,
+            "D": 4,
+            "E": 5,
+            "F": 6
+        };
 
-            var ratingLevels = {
-                "A+": 0,
-                "A": 1,
-                "B": 2,
-                "C": 3,
-                "D": 4,
-                "E": 5,
-                "F": 6
-            };
+        var ratingPosition = ratingLevels[rating] * 100 / 7;
+        ratingIndicator.style.left = "calc(" + ratingPosition + "% - -30px)"; // Center the indicator
 
-            var ratingPosition = ratingLevels[rating] * 100 / 7;
-            ratingIndicator.style.left = "calc(" + ratingPosition + "% - -30px)"; // Center the indicator
-
-            // Initial Chart.js setup
-            const ctx = document.getElementById('carbonFootprintChart').getContext('2d');
-            mychar = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Carbon Footprint und Carbon Offset cost'],
-                    datasets: [
-			{
-                          label: 'Carbon Footprint (kg CO₂)',
-                          data: [<?php echo $carbon_footprint; ?>],
-                          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                          borderColor: 'rgba(255, 99, 132, 1)',
-                          borderWidth: 1
-                        },
-			{
-			  label: 'Carbon Offset cost',
-                          data: [<?php echo $carbon_offset; ?>],
-                          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                          borderColor: 'rgba(54, 162, 235, 1)',
-                          borderWidth: 1
-
-			}
-		  ]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+        // Initial Chart.js setup
+        const ctx = document.getElementById('carbonFootprintChart').getContext('2d');
+        mychar = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Carbon Footprint and Carbon Offset'],
+                datasets: [
+                    {
+                        label: 'Carbon Footprint (kg CO₂)',
+                        data: [<?php echo number_format($carbon_footprint,3); ?>],
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Carbon Offset cost',
+                        data: [<?php echo number_format($carbon_offset,3); ?>],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
                     }
                 }
-            });
+            }
+        });
 
-            $('#st-carbon-footprint-form').on('submit', function(e) {
-                e.preventDefault();
-                var pageViews = $('#page-views').val();
+        // Update chart configuration by mutating
+        function updateConfigByMutating(chart) {
+            chart.options.plugins.title.text = 'Updated Carbon Footprint and Offset Costs';
+            chart.update();
+        }
 
-                $.ajax({
-                    url: ajaxurl,
-                    method: 'POST',
-                    data: {
-                        action: 'st_calculate_carbon_footprint',
-                        page_views: pageViews
-                    },
-                    success: function(response) {
-                        // Destroy the previous chart instance if it exists
-                        if (mychar) {
-                            mychar.destroy();
-                        }
-
-                        // Create a new chart instance
-                        const ctx = document.getElementById('carbonFootprintChart').getContext('2d');
-                        mychar = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: ['Carbon Footprint und Carbon Offset cost'],
-                                datasets: [{
-                                    label: ['Carbon Footprint (kg CO₂)'],
-                                    data: [
-                                        response.carbon_footprint,
-                                    ],
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.2)',
-                                    ],
-                                    borderColor: [
-                                        'rgba(255, 99, 132, 1)',
-                                    ],
-                                    borderWidth: 1
-                                  },		
-				  {
-				    label: ['Carbon Offset cost'],
-                                    data: [
-                                        response.carbon_offset
-                                    ],
-                                    backgroundColor: [
-                                        'rgba(54, 162, 235, 0.2)'
-                                    ],
-                                    borderColor: [
-                                        'rgba(54, 162, 235, 1)'
-                                    ],
-                                    borderWidth: 1
-                                  }
-				]
-                            },
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
-                                    }
-                                }
-                            }
-                        });
+        // Update chart configuration by creating a new config object
+        function updateConfigAsNewObject(chart) {
+            chart.options = {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Updated Carbon Footprint and Offset Costs'
                     }
-                });
+                },
+                scales: {
+                    x: {
+                        display: true
+                    },
+                    y: {
+                        display: true,
+                        beginAtZero: true
+                    }
+                }
+            };
+            chart.update();
+        }
+        function removeData(chart) 
+	{
+            chart.data.labels.pop();
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.pop();
+            });
+            chart.update();
+        }
+
+        $('#st-carbon-footprint-form').on('submit', function(e) {
+            e.preventDefault();
+            var pageViews = $('#page-views').val();
+
+            $.ajax({
+                url: ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'st_carbon_footprint',
+                    st_nonce: st_ajax_object.st_nonce,
+                    page_views: pageViews
+                },
+                success: function(response) 
+		{
+                    document.getElementById('st-carbon-footprint-result').innerText = 'Estimated Carbon Footprint: ' + parseFloat(response.data.carbon_footprint).toFixed(3) + ' kg CO₂ ';
+
+                    // Add new data to the chart
+                    mychar.data.datasets[0].data.push( parseFloat(response.data.carbon_footprint).toFixed(3) );
+                    mychar.data.datasets[1].data.push( parseFloat(response.data.carbon_offset).toFixed(3) );
+
+                    // Optionally add a new label (e.g., for new submissions)
+                    mychar.data.labels.push('New Data ' + (mychar.data.labels.length + 1));
+
+                    // Update the chart title using one of the update functions
+                    updateConfigByMutating(mychar);  // Or use updateConfigAsNewObject(mychar);
+                }
             });
         });
-    </script>
+    });
+</script>
+
+
     <?php
 }
 
@@ -347,6 +371,7 @@ function st_calculate_carbon_footprint($page_views)
     $average_co2_per_view = 0.0002; // Example value in kg CO₂
     return $page_views * $average_co2_per_view;
 }
+
 //////////////////////////////
 function st_get_carbon_offset($carbon_footprint) 
 {
@@ -439,7 +464,7 @@ function st_settings_page()
                 ?>
                 <div class="notice notice-error is-dismissible">
                 <?php
-                    foreach($messages as $message) { echo '<p>' . $message . '</p>'; }
+                    foreach($messages as $message) { echo '<p>' . esc_html($message) . '</p>'; }
                 ?>
                 </div>
                 <?php
@@ -452,7 +477,7 @@ function st_settings_page()
                 ?>
                 <div class="notice notice-success is-dismissible">
                 <?php
-                    foreach($success_messages as $s_message) { echo '<p>' . $s_message . '</p>'; }
+                    foreach($success_messages as $s_message) { echo '<p>' . esc_html($s_message ). '</p>'; }
                 ?>
                 </div>
                 <?php
@@ -464,6 +489,7 @@ function st_settings_page()
         <div class="st-dashboard">
             <div class="st-box">
                 <form method="post" action="options.php" enctype="multipart/form-data">
+		  <?php wp_nonce_field('st_upload_ga_credentials', 'st_ga_nonce'); ?>
 		  <table class="form-table">
 		    <tr valign="top">
                       <th scope="row">Tracking Solution</th>
@@ -499,7 +525,6 @@ function st_settings_page()
 			  </td>
 			  <td>
 				<strong><p>You don't know, how to get a Google Analytics Credentials as JSON File?</p></strong><p>You need to create one hear: <a href="https://developers.google.com/analytics/devguides/reporting/data/v1/quickstart-client-libraries?hl=de#php">Enable the API</a></P>
-				<p>When you upload your JSON file, it will appear so : <strong>Current file:</strong>ga_ga_credentials(Linux Time).json</p>
 			  </td>
         	        </tr>
                 	<tr valign="top">
@@ -567,34 +592,64 @@ document.addEventListener('DOMContentLoaded', function()
 }
 
 ////////////////////////////////////////////////
+function st_custom_mime_types($mimes) 
+{
+    $mimes['json'] = 'application/json';
+    return $mimes;
+}
+add_filter('upload_mimes', 'st_custom_mime_types');
+
+////////////////////////////////////////////////
 function st_handle_file_upload() 
 {
-  if (isset($_FILES['st_ga_credentials_json']) && $_FILES['st_ga_credentials_json']['error'] == UPLOAD_ERR_OK) 
-  {
-    $uploaded_file = $_FILES['st_ga_credentials_json'];
-
-        // Überprüfen, ob die Datei wirklich eine JSON-Datei ist
-    $file_type = wp_check_filetype($uploaded_file['name']);
-    if ($file_type['ext'] !== 'json') 
+    if (isset($_POST['st_ga_nonce']) && wp_verify_nonce($_POST['st_ga_nonce'], 'st_upload_ga_credentials')) 
     {
-	st_add_admin_message( 'Please upload a valid JSON file.','error');
-            return;
+        if (isset($_FILES['st_ga_credentials_json']) && $_FILES['st_ga_credentials_json']['error'] == UPLOAD_ERR_OK) 
+	{
+            $uploaded_file = $_FILES['st_ga_credentials_json'];
+
+            // Überprüfen, ob die Datei wirklich eine JSON-Datei ist
+            $file_type = wp_check_filetype($uploaded_file['name']);
+            if ($file_type['ext'] !== 'json') 
+	    {
+                st_add_admin_message('Please upload a valid JSON file.', 'error');
+                return;
+            }
+
+            // Erstellen eines temporären Dateipfads für die Seitenladung
+            $temp_file = $_FILES['st_ga_credentials_json']['tmp_name'];
+            $file = array(
+                'name'     => $_FILES['st_ga_credentials_json']['name'],
+                'type'     => $_FILES['st_ga_credentials_json']['type'],
+                'tmp_name' => $temp_file,
+                'error'    => $_FILES['st_ga_credentials_json']['error'],
+                'size'     => $_FILES['st_ga_credentials_json']['size']
+            );
+
+            $movefile = wp_handle_sideload($file, array('test_form' => false));
+
+            if ($movefile && !isset($movefile['error'])) 
+	    {
+                update_option('st_google_credentials_json', $movefile['file']);
+                st_add_admin_message('File uploaded successfully.', 'success');
+            }
+	    else 
+	    {
+                st_add_admin_message('There was an error uploading the file: ' . $movefile['error'], 'error');
+            }
+        } 
+	else 
+	{
+            st_add_admin_message('No file was uploaded or there was an upload error.', 'error');
+        }
     }
-
-        // Datei im WordPress-Upload-Verzeichnis speichern
-    $upload_dir = wp_upload_dir();
-    $uploadFolder=$upload_dir['basedir'] . '/SustainabilityTracker';
-    if(!file_exists($uploadFolder)) wp_mkdir_p($uploadFolder);
-    $destination = $uploadFolder.'/ga_credentials'.time().'.json';
-    if (move_uploaded_file($uploaded_file['tmp_name'], $destination)) 
-    {
-      update_option('st_google_credentials_json', $destination);
-  }
 }
-}
-
 add_action('admin_init', 'st_handle_file_upload');
+
+
+
 ////////////////////////////////////////////////
+
 function st_plugin_option_updated($option_name, $old_value, $value)
 {
     if (in_array($option_name, ['st_tracking_solution', 'st_google_analytics_property_id','st_ga_credentials_json','st_enable_rss_feed','st_rss_feeds_shuffle','st_feed_urls'])) 
@@ -608,11 +663,20 @@ add_action('update_option', 'st_plugin_option_updated', 10, 3);
 ////////////////////////////////////////////////
 function st_get_custom_page_views($start_date = null, $end_date = null)
 {
-global $wpdb;
+    global $wpdb;
 
     // Default to the current month if no date range is provided
-    $start_date = $start_date ?:  date('Y-m-d', strtotime('-8 years'));
-    $end_date = $end_date ?: date('Y-m-t');
+    $start_date = $start_date ?: gmdate('Y-m-d', strtotime('-8 years'));
+    $end_date = $end_date ?: gmdate('Y-m-t');
+
+    // Generate a unique cache key based on the date range
+    $cache_key = "st_custom_page_views_{$start_date}_{$end_date}";
+    $cached_result = wp_cache_get($cache_key);
+
+    if ($cached_result !== false) 
+    {
+        return $cached_result;
+    }
 
     // Prepare the SQL query
     $query = $wpdb->prepare("
@@ -624,8 +688,13 @@ global $wpdb;
     // Execute the query and get the result
     $total_views = $wpdb->get_var($query);
 
-    return $total_views ? (int)$total_views : 0;
+    // Cache the result
+    $total_views = $total_views ? (int)$total_views : 0;
+    wp_cache_set($cache_key, $total_views, '', 3600); // Cache for 1 hour
+
+    return $total_views;
 }
+
 ////////////////////////////////////////
 function st_get_page_views_from_jetpack()
 {
@@ -690,7 +759,7 @@ function st_get_page_views_from_google_analytics($total)
         // Set up the request
 	if($total)
 	{
-	   $start_date = date('Y-m-d', strtotime('-8 years'));
+	   $start_date = gmdate('Y-m-d', strtotime('-8 years'));
            $request = (new RunReportRequest())
             	    ->setProperty('properties/' . $property_id)
 		     ->setDateRanges([
@@ -710,7 +779,7 @@ function st_get_page_views_from_google_analytics($total)
                     ->setProperty('properties/' . $property_id)
                     ->setDateRanges([
                         new DateRange([
-                            'start_date' => date('Y-m').'-01',
+                            'start_date' => gmdate('Y-m').'-01',
                             'end_date' => 'today',
                         ]),
                     ])
@@ -752,29 +821,40 @@ function st_increment_page_views($post_id)
         return;
     }
 
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'st_custom_track_post_views'; // Custom table name
+    // Try to get the view count from cache
+    $cache_key = "st_page_views_{$post_id}";
+    $cached_views = wp_cache_get($cache_key);
 
-    // Insert a new row into the wp_post_views table
-    $wpdb->insert(
-        $table_name,
-        [
-            'post_id' => $post_id,
-            'view_date' => current_time('mysql'), // Current date and time
-            'user_id' => get_current_user_id(), // Get the current user ID (0 if not logged in)
-        ],
-        [
-            '%d',   // post_id as integer
-            '%s',   // view_date as string
-            '%d'    // user_id as integer
-        ]
-    );
+    if ($cached_views === false) 
+    {
+        // No cached value, so increment the view count
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'st_custom_track_post_views';
 
-    // Optionally, increment the meta value for page views
-    $current_views = get_post_meta($post_id, 'st_page_views', true);
-    $current_views = $current_views ? (int)$current_views : 0;
-    $new_views = $current_views + 1;
-    update_post_meta($post_id, 'st_page_views', $new_views);
+        // Insert a new row into the custom table
+        $wpdb->insert(
+            $table_name,
+            [
+                'post_id' => $post_id,
+                'view_date' => current_time('mysql'),
+                'user_id' => get_current_user_id(),
+            ],
+            [
+                '%d',   // post_id as integer
+                '%s',   // view_date as string
+                '%d'    // user_id as integer
+            ]
+        );
+
+        // Update the meta value for page views
+        $current_views = get_post_meta($post_id, 'st_page_views', true);
+        $current_views = $current_views ? (int)$current_views : 0;
+        $new_views = $current_views + 1;
+        update_post_meta($post_id, 'st_page_views', $new_views);
+
+        // Cache the new view count for future use
+        wp_cache_set($cache_key, $new_views, '', 3600); // Cache for 1 hour
+    }
 }
 
 // Hook into WordPress to track views when the header is loaded
@@ -788,19 +868,30 @@ add_action('wp_head', function()
 });
 
 
+
 ////////////////////////////////////////////////
-function st_calculate_carbon_footprint_ajax() 
+function st_carbon_footprint_ajax() 
 {
+    // Überprüfe den Nonce
+    if (!isset($_POST['st_nonce']) || !wp_verify_nonce($_POST['st_nonce'], 'st_calculate_carbon_footprint_nonce')) 
+    {
+        wp_send_json_error('Invalid Nonce');
+        wp_die(); // Stoppe die Ausführung für Sicherheit
+    }
+
+    // Verarbeite die Anfrage nur, wenn der Nonce gültig ist
     $page_views = intval($_POST['page_views']);
     $carbon_footprint = st_calculate_carbon_footprint($page_views);
     $carbon_offset = st_get_carbon_offset($carbon_footprint);
 
-    wp_send_json(array(
+    wp_send_json_success(array(
         'carbon_footprint' => $carbon_footprint,
         'carbon_offset' => $carbon_offset
     ));
 }
-add_action('wp_ajax_st_calculate_carbon_footprint', 'st_calculate_carbon_footprint_ajax');
+
+add_action('wp_ajax_st_carbon_footprint', 'st_carbon_footprint_ajax');
+
 ///////////////////////////////////////////////
 function fetch_rss_feed($feed_url) 
 
