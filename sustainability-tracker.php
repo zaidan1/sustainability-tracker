@@ -7,7 +7,7 @@
  * Plugin URI:          https://github.com/zaidan1/sustainability-tracker
  * License:             MIT
  * License URI:         https://github.com/zaidan1/sustainability-tracker/blob/main/LICENSE
- * Version:             1.0.55
+ * Version:             1.2.3
  * Requires at least:   5.4
  * Requires PHP:        5.6
  *
