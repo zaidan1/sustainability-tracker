@@ -5,8 +5,8 @@ The **Sustainability Tracker Plugin** is a WordPress plugin designed to help web
 
 ## Features
 
-- **Custom Tracking Solutions:** Use built-in tracking to monitor page views.
-- **Google Analytics Integration:** Fetch page views using the Google Analytics API.
+- **Custom Tracking Solutions:** Use built-in tracking to monitor page views.This option allows you to track page views directly through the plugin without relying on external services.
+- **Google Analytics Integration:** Fetch page views using the Google Analytics API.This does not track page views in real-time but instead queries the Google Analytics API to gather information on page views that have already been recorded in your Google Analytics account.
 - **Carbon Footprint Calculator:** Estimate the carbon impact of your website based on monthly traffic.
 - **User-Friendly Settings Page:** Easily configure tracking solutions and view carbon footprint data directly in your WordPress dashboard.
 
