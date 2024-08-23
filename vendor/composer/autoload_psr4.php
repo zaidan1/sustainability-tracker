@@ -6,8 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Ramsey\\Uuid\\' => array($vendorDir . '/ramsey/uuid/src'),
-    'Ramsey\\Collection\\' => array($vendorDir . '/ramsey/collection/src'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-factory/src', $vendorDir . '/psr/http-message/src'),
     'Psr\\Http\\Client\\' => array($vendorDir . '/psr/http-client/src'),
     'Psr\\Cache\\' => array($vendorDir . '/psr/cache/src'),
@@ -38,5 +36,4 @@ return array(
     'GPBMetadata\\Google\\Analytics\\Data\\' => array($vendorDir . '/google/analytics-data/metadata'),
     'GPBMetadata\\ApiCore\\' => array($vendorDir . '/google/gax/metadata/ApiCore'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
-    'Brick\\Math\\' => array($vendorDir . '/brick/math/src'),
 );

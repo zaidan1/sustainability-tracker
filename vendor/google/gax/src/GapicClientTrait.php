@@ -38,7 +38,6 @@ use Google\ApiCore\Middleware\FixedHeaderMiddleware;
 use Google\ApiCore\Middleware\OperationsMiddleware;
 use Google\ApiCore\Middleware\OptionsFilterMiddleware;
 use Google\ApiCore\Middleware\PagedMiddleware;
-use Google\ApiCore\Middleware\RequestAutoPopulationMiddleware;
 use Google\ApiCore\Middleware\RetryMiddleware;
 use Google\ApiCore\Options\CallOptions;
 use Google\ApiCore\Options\ClientOptions;
@@ -614,8 +613,6 @@ trait GapicClientTrait
      *
      *     @type RetrySettings $retrySettings [optional] A retry settings override
      *           For the call.
-     *     @type array<string, string> $autoPopulationSettings Settings for
-     *           auto population of particular request fields if unset.
      * }
      *
      * @return callable
@@ -629,13 +626,6 @@ trait GapicClientTrait
                 'X-Goog-User-Project' => [$quotaProject]
             ];
         }
-
-        if (isset($this->apiVersion)) {
-            $fixedHeaders += [
-                'X-Goog-Api-Version' => [$this->apiVersion]
-            ];
-        }
-
         $callStack = function (Call $call, array $options) {
             $startCallMethod = $this->transportCallMethods[$call->getCallType()];
             return $this->transport->$startCallMethod($call, $options);
@@ -643,10 +633,6 @@ trait GapicClientTrait
         $callStack = new CredentialsWrapperMiddleware($callStack, $this->credentialsWrapper);
         $callStack = new FixedHeaderMiddleware($callStack, $fixedHeaders, true);
         $callStack = new RetryMiddleware($callStack, $callConstructionOptions['retrySettings']);
-        $callStack = new RequestAutoPopulationMiddleware(
-            $callStack,
-            $callConstructionOptions['autoPopulationSettings'],
-        );
         $callStack = new OptionsFilterMiddleware($callStack, [
             'headers',
             'timeoutMillis',
@@ -678,7 +664,6 @@ trait GapicClientTrait
     private function configureCallConstructionOptions(string $methodName, array $optionalArgs)
     {
         $retrySettings = $this->retrySettings[$methodName];
-        $autoPopulatedFields = $this->descriptors[$methodName]['autoPopulatedFields'] ?? [];
         // Allow for retry settings to be changed at call time
         if (isset($optionalArgs['retrySettings'])) {
             if ($optionalArgs['retrySettings'] instanceof RetrySettings) {
@@ -691,7 +676,6 @@ trait GapicClientTrait
         }
         return [
             'retrySettings' => $retrySettings,
-            'autoPopulationSettings' => $autoPopulatedFields,
         ];
     }
 

@@ -81,7 +81,7 @@ class CredentialsWrapper implements ProjectIdProviderInterface
         string $universeDomain = GetUniverseDomainInterface::DEFAULT_UNIVERSE_DOMAIN
     ) {
         $this->credentialsFetcher = $credentialsFetcher;
-        $this->authHttpHandler = $authHttpHandler;
+        $this->authHttpHandler = $authHttpHandler ?: self::buildHttpHandlerFactory();
         if (empty($universeDomain)) {
             throw new ValidationException('The universe domain cannot be empty');
         }
@@ -141,11 +141,12 @@ class CredentialsWrapper implements ProjectIdProviderInterface
         ];
 
         $keyFile = $args['keyFile'];
+        $authHttpHandler = $args['authHttpHandler'] ?: self::buildHttpHandlerFactory();
 
         if (is_null($keyFile)) {
             $loader = self::buildApplicationDefaultCredentials(
                 $args['scopes'],
-                $args['authHttpHandler'],
+                $authHttpHandler,
                 $args['authCacheOptions'],
                 $args['authCache'],
                 $args['quotaProject'],
@@ -188,7 +189,7 @@ class CredentialsWrapper implements ProjectIdProviderInterface
             );
         }
 
-        return new CredentialsWrapper($loader, $args['authHttpHandler'], $universeDomain);
+        return new CredentialsWrapper($loader, $authHttpHandler, $universeDomain);
     }
 
     /**
@@ -250,7 +251,7 @@ class CredentialsWrapper implements ProjectIdProviderInterface
 
                 // Call updateMetadata to take advantage of self-signed JWTs
                 if ($this->credentialsFetcher instanceof UpdateMetadataInterface) {
-                    return $this->credentialsFetcher->updateMetadata([], $audience, $this->authHttpHandler);
+                    return $this->credentialsFetcher->updateMetadata([], $audience);
                 }
 
                 // In case a custom fetcher is provided (unlikely) which doesn't
@@ -285,6 +286,19 @@ class CredentialsWrapper implements ProjectIdProviderInterface
                 ));
             }
             $this->hasCheckedUniverse = true;
+        }
+    }
+
+    /**
+     * @return Guzzle6HttpHandler|Guzzle7HttpHandler
+     * @throws ValidationException
+     */
+    private static function buildHttpHandlerFactory()
+    {
+        try {
+            return HttpHandlerFactory::build();
+        } catch (Exception $ex) {
+            throw new ValidationException("Failed to build HttpHandler", $ex->getCode(), $ex);
         }
     }
 

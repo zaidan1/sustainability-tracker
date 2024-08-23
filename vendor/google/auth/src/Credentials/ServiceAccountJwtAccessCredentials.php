@@ -41,13 +41,6 @@ class ServiceAccountJwtAccessCredentials extends CredentialsLoader implements
     use ServiceAccountSignerTrait;
 
     /**
-     * Used in observability metric headers
-     *
-     * @var string
-     */
-    private const CRED_TYPE = 'jwt';
-
-    /**
      * The OAuth2 instance used to conduct authorization.
      *
      * @var OAuth2
@@ -166,21 +159,11 @@ class ServiceAccountJwtAccessCredentials extends CredentialsLoader implements
     }
 
     /**
-     * Return the cache key for the credentials.
-     * The format for the Cache Key one of the following:
-     * ClientEmail.Scope
-     * ClientEmail.Audience
-     *
      * @return string
      */
     public function getCacheKey()
     {
-        $scopeOrAudience = $this->auth->getScope();
-        if (!$scopeOrAudience) {
-            $scopeOrAudience = $this->auth->getAudience();
-        }
-
-        return $this->auth->getIssuer() . '.' . $scopeOrAudience;
+        return $this->auth->getCacheKey();
     }
 
     /**
@@ -225,10 +208,5 @@ class ServiceAccountJwtAccessCredentials extends CredentialsLoader implements
     public function getQuotaProject()
     {
         return $this->quotaProject;
-    }
-
-    protected function getCredType(): string
-    {
-        return self::CRED_TYPE;
     }
 }

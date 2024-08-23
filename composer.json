@@ -1,5 +1,9 @@
 {
+    "scripts": {
+        "pre-install-cmd": "php check-php-version.php",
+        "pre-update-cmd": "php check-php-version.php"
+    },
     "require": {
-        "google/analytics-data": "^0.18.0"
+        "google/analytics-data": "^0.15.0"
     }
 }

@@ -45,11 +45,7 @@ class DimensionMetadata extends \Google\Protobuf\Internal\Message
      */
     private $deprecated_api_names;
     /**
-     * True if the dimension is custom to this property. This includes user,
-     * event, & item scoped custom dimensions; to learn more about custom
-     * dimensions, see https://support.google.com/analytics/answer/14240153. This
-     * also include custom channel groups; to learn more about custom channel
-     * groups, see https://support.google.com/analytics/answer/13051316.
+     * True if the dimension is a custom dimension for this property.
      *
      * Generated from protobuf field <code>bool custom_definition = 5;</code>
      */
@@ -82,11 +78,7 @@ class DimensionMetadata extends \Google\Protobuf\Internal\Message
      *           for a period of time. After the deprecation period, the dimension will be
      *           available only by `apiName`.
      *     @type bool $custom_definition
-     *           True if the dimension is custom to this property. This includes user,
-     *           event, & item scoped custom dimensions; to learn more about custom
-     *           dimensions, see https://support.google.com/analytics/answer/14240153. This
-     *           also include custom channel groups; to learn more about custom channel
-     *           groups, see https://support.google.com/analytics/answer/13051316.
+     *           True if the dimension is a custom dimension for this property.
      *     @type string $category
      *           The display name of the category that this dimension belongs to. Similar
      *           dimensions and metrics are categorized together.
@@ -212,11 +204,7 @@ class DimensionMetadata extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * True if the dimension is custom to this property. This includes user,
-     * event, & item scoped custom dimensions; to learn more about custom
-     * dimensions, see https://support.google.com/analytics/answer/14240153. This
-     * also include custom channel groups; to learn more about custom channel
-     * groups, see https://support.google.com/analytics/answer/13051316.
+     * True if the dimension is a custom dimension for this property.
      *
      * Generated from protobuf field <code>bool custom_definition = 5;</code>
      * @return bool
@@ -227,11 +215,7 @@ class DimensionMetadata extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * True if the dimension is custom to this property. This includes user,
-     * event, & item scoped custom dimensions; to learn more about custom
-     * dimensions, see https://support.google.com/analytics/answer/14240153. This
-     * also include custom channel groups; to learn more about custom channel
-     * groups, see https://support.google.com/analytics/answer/13051316.
+     * True if the dimension is a custom dimension for this property.
      *
      * Generated from protobuf field <code>bool custom_definition = 5;</code>
      * @param bool $var
