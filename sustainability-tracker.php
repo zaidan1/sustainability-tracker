@@ -85,7 +85,6 @@ function st_enqueue_scripts()
 
 // Register activation hook
 register_activation_hook(__FILE__, 'st_create_post_views_table');
-register_activation_hook(__FILE__, 'st_rss_setting');
 
 // Function to create custom tables
 function st_create_post_views_table() 
@@ -115,20 +114,6 @@ function st_create_post_views_table()
     }
 }
 
-function st_rss_setting()
-{
-    if (get_option('st_enable_rss_feed') === false) 
-    {
-        update_option('st_enable_rss_feed', true);
-    }
-
-    if (get_option('st_feed_urls') === false) 
-    {
-        update_option('st_feed_urls', array('https://www.rubicon.com/feed/'));
-    }
-}
-
-////////////////////////////////////////////////////////////
 function st_add_admin_message($message,$stat) 
 {
     
@@ -386,19 +371,23 @@ function st_get_carbon_offset($carbon_footprint)
 function st_register_settings() 
 {
     register_setting('st_settings_group', 'st_tracking_solution');
- #   register_setting('st_settings_group', 'st_carbon_offset_api_key');
     register_setting('st_settings_group', 'st_feed_urls');
     register_setting('st_settings_group', 'st_enable_rss_feed');
     register_setting('st_settings_group', 'st_rss_feeds_shuffle');
- #   register_setting('st_settings_group', 'st_google_credentials_json');
     register_setting('st_settings_group', 'st_google_analytics_property_id');
+    register_setting('st_settings_group', 'st_display_position');
+    register_setting('st_settings_group', 'st_display_pages');
 #    register_setting('st_settings_group', 'st_jetpack_api_key');
+ #   register_setting('st_settings_group', 'st_google_credentials_json');
+ #   register_setting('st_settings_group', 'st_carbon_offset_api_key');
     add_settings_section(
         'st_feed_settings_section',
         'RSS Feed Settings',
         null,
         'st_settings_group'
     );
+
+
     add_settings_field(
         'st_enable_rss_feed',
         'Enable RSS Feed Integration',
@@ -421,6 +410,26 @@ function st_register_settings()
         'st_settings_group',
         'st_feed_settings_section'
     );
+    add_settings_section(
+	    'st_display_options_section', 
+	    'Display Options', 
+	    'st_display_options_callback', 
+	    'st_settings_group'
+    );
+    add_settings_field(
+	    'st_display_position', 
+	    'Display Position', 
+	    'st_display_position_callback', 
+	    'st_settings_group', 
+	    'st_display_options_section'
+    );
+     add_settings_field(
+        'st_display_pages',
+        'Select Pages to Display Rating',
+        'st_display_pages_callback',
+        'st_settings_group',
+        'st_display_options_section'
+    );
 
 }
 
@@ -434,14 +443,47 @@ function st_feed_urls_field_callback()
 function st_enable_rss_feed_field_callback() 
 {
     $is_enabled = get_option('st_enable_rss_feed', 0);
-    echo '<label for="st_enable_rss_feed"><input type="checkbox" id="st_enable_rss_feed" name="st_enable_rss_feed" value="1" ' . checked(1, $is_enabled, false) . ' /> Enable RSS Feed Integration</label>';
+    echo '<label for="st_enable_rss_feed"><input type="checkbox" name="st_enable_rss_feed" value="1" ' . checked(1, $is_enabled, false) . ' /> Enable RSS Feed Integration</label>';
 }
 function st_feed_urls_shuffle_field_callback() 
 {
     $is_enabled = get_option('st_rss_feeds_shuffle', 0);
-    echo '<label for="st_rss_feeds_shuffle"><input type="checkbox" id="st_rss_feeds_shuffle" name="st_rss_feeds_shuffle" value="1" ' . checked(1, $is_enabled, false) . ' /> RSS Feeds shuffle</label>';
+    echo '<label for="st_rss_feeds_shuffle"><input type="checkbox" name="st_rss_feeds_shuffle" value="1" ' . checked(1, $is_enabled, false) . ' /> RSS Feeds shuffle</label>';
 }
+function st_display_options_callback() 
+{
+    echo '<p>Choose where and how the Rating review should be displayed.</p>';
+}
+function st_display_position_callback() 
+{
+    $options = get_option('st_display_position');
+    echo "<select name='st_display_position'>
+            <option value='bottom_left' " . selected($options, 'bottom_left', false) . ">Bottom left</option>
+            <option value='bottom_right' " . selected($options, 'bottom_right', false) . ">Bottom right</option>
+            <option value='top_left' " . selected($options, 'top_left', false) . ">Top left</option>
+            <option value='top_right' " . selected($options, 'top_right', false) . ">Top right</option>
+         </select>";
+}
+function st_display_pages_callback() 
+{
+    echo '<p>Select the pages where you want to display the sustainability rating.</p>';
+    $pages = get_pages(); // Holen aller Seiten
+    $selected_pages = get_option('st_display_pages', []);
 
+    echo '<fieldset>';
+    foreach ($pages as $page) 
+    {
+	if(is_array($selected_pages))
+	{
+          $checked = in_array($page->ID, $selected_pages) ? 'checked="checked"' : '';
+	}
+        echo '<label>';
+        echo '<input type="checkbox" name="st_display_pages[]" value="' . esc_attr($page->ID) . '" ' . $checked . '> ';
+        echo esc_html($page->post_title);
+        echo '</label><br>';
+    }
+    echo '</fieldset>';
+}
 add_action('admin_init', 'st_register_settings');
 
 //////////////////////////
@@ -551,6 +593,7 @@ function st_settings_page()
                       do_settings_sections('st_settings_group');
 		      settings_fields('st_settings_group');
                     ?>
+		
                     <?php submit_button(); ?>
                 </form>
             </div>
@@ -598,6 +641,12 @@ function st_custom_mime_types($mimes)
     return $mimes;
 }
 add_filter('upload_mimes', 'st_custom_mime_types');
+////////////////////////////////////////////////
+function st_sanitize_display_pages($input) 
+{
+    // Ensure the input is an array of integers (page IDs)
+    return array_map('absint', (array)$input);
+}
 
 ////////////////////////////////////////////////
 function st_handle_file_upload() 
@@ -638,10 +687,6 @@ function st_handle_file_upload()
                 st_add_admin_message('There was an error uploading the file: ' . $movefile['error'], 'error');
             }
         } 
-	else 
-	{
-            st_add_admin_message('No file was uploaded or there was an upload error.', 'error');
-        }
     }
 }
 add_action('admin_init', 'st_handle_file_upload');
@@ -652,13 +697,41 @@ add_action('admin_init', 'st_handle_file_upload');
 
 function st_plugin_option_updated($option_name, $old_value, $value)
 {
-    if (in_array($option_name, ['st_tracking_solution', 'st_google_analytics_property_id','st_ga_credentials_json','st_enable_rss_feed','st_rss_feeds_shuffle','st_feed_urls'])) 
+    // List of options that should trigger the success message
+    $tracked_options = [
+        'st_tracking_solution', 
+        'st_google_analytics_property_id',
+        'st_ga_credentials_json',
+        'st_enable_rss_feed',
+        'st_rss_feeds_shuffle',
+        'st_feed_urls',
+        'st_display_position',
+        'st_display_pages'
+    ];
+
+    // Only proceed if the option is in the tracked list and the value has changed
+    if (in_array($option_name, $tracked_options)) 
     {
-	st_add_admin_message( 'Settings successfully saved','success');
-	
+        // Trim and compare to avoid false positives due to spaces or line breaks
+      if (is_array($value)) 
+      {
+            $old_value = array_map('trim', $old_value);
+            $value = array_map('trim', $value);
+      } 
+      else 
+      {
+            $old_value = trim($old_value);
+            $value = trim($value);
+      }
+
+      if ($old_value !== $value) 
+      {
+            st_add_admin_message('Settings successfully saved', 'success');
+      }
     }
 }
 add_action('update_option', 'st_plugin_option_updated', 10, 3);
+
 
 ////////////////////////////////////////////////
 function st_get_custom_page_views($start_date = null, $end_date = null)
@@ -925,5 +998,54 @@ function fetch_rss_feed($feed_url)
     return $items;
 }
 //////////////////////////////////////////////
+function st_display_sustainability_rating($content)
+{
+  if (is_page()) 
+  {
+   global $post;
+   $selected_pages = get_option('st_display_pages', []);
+
+   if (in_array($post->ID, $selected_pages)) 
+   {
+       // Assume $rating_overview is accessible in this scope
+       $tracking_solution = get_option('st_tracking_solution');
+       $position = get_option('st_display_position', 'bottom_right');
+       switch ($tracking_solution) 
+       {
+           case 'google_analytics':
+               $total_page_views = st_get_page_views_from_google_analytics(true);
+               break;
+           case 'custom':
+           default:
+               $total_page_views = st_get_custom_page_views(true);
+               break;
+       }
+
+       $total_carbon_footprint = st_calculate_carbon_footprint($total_page_views);
+       $total_carbon_offset = st_get_carbon_offset($total_carbon_footprint);
+
+       $rating = rating_function($total_carbon_footprint, $total_carbon_offset);
+       $globalRating=[
+	       		'A+' => '50% Lower than Global Average | 🌱 Eco-Friendly',
+			'A'  => '30% Lower than Global Average | 🌱 Eco-Friendly',
+			'B'  => '20% Lower than Global Average | 🌱 Eco-Friendly',
+			'C'  => '10% Lower than Global Average | 🌱 Eco-Friendly',
+			'D'  => 'in the Global Average',
+			'E'  => '10% More than Global Average',
+			'F'  => '20% More than Global Average',
+       		     ];
+       // Append the rating overview to the content
+       $content .= "<div class='sustainability-rating {$position}'>Rating:{$rating} | {$globalRating[$rating]} </div>";
+   }
+    }
+
+    return $content;
+}
+add_filter('the_content', 'st_display_sustainability_rating');
+function st_enqueue_styles() 
+{
+    wp_enqueue_style('st-styles', ST_PLUGIN_URL . 'assets/css/rating-style.css');
+}
+add_action('wp_enqueue_scripts', 'st_enqueue_styles');
 
 
