@@ -1024,7 +1024,7 @@ function st_display_sustainability_rating($content)
    global $post;
    $selected_pages = get_option('st_display_pages', []);
 
-   if (in_array($post->ID, $selected_pages)) 
+   if (is_array($selected_pages) && in_array($post->ID, $selected_pages)) 
    {
        // Assume $rating_overview is accessible in this scope
        $tracking_solution = get_option('st_tracking_solution');
