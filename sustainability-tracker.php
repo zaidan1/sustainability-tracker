@@ -471,17 +471,29 @@ function st_display_pages_callback()
     $selected_pages = get_option('st_display_pages', []);
 
     echo '<fieldset>';
+    echo '<label>';
+    echo '<input type="checkbox" id="all_pages" onclick="toggleAllPages(this.checked);"> ';
+    echo 'On All Pages';
+    echo '</label>';
+    echo '<ul class="flex-container" role="list">';
     foreach ($pages as $page) 
     {
 	if(is_array($selected_pages))
 	{
           $checked = in_array($page->ID, $selected_pages) ? 'checked="checked"' : '';
 	}
+	else
+	{
+	   $checked = '';
+	}
+        echo '<li>';
         echo '<label>';
         echo '<input type="checkbox" name="st_display_pages[]" value="' . esc_attr($page->ID) . '" ' . $checked . '> ';
         echo esc_html($page->post_title);
-        echo '</label><br>';
+        echo '</label>';
+        echo '</li>';
     }
+    echo '</ul>';
     echo '</fieldset>';
 }
 add_action('admin_init', 'st_register_settings');
@@ -566,7 +578,7 @@ function st_settings_page()
 			    ?>
 			  </td>
 			  <td>
-				<strong><p>You don't know, how to get a Google Analytics Credentials as JSON File?</p></strong><p>You need to create one hear: <a href="https://developers.google.com/analytics/devguides/reporting/data/v1/quickstart-client-libraries?hl=de#php">Enable the API</a></P>
+				<strong><p>You don't know, how to get a Google Analytics Credentials as JSON File?</p></strong><p>You need to create one hear: <a href="https://developers.google.com/analytics/devguides/reporting/data/v1/quickstart-client-libraries?hl=en#step_1_enable_the_api" target="_blank">Enable the API</a></P>
 			  </td>
         	        </tr>
                 	<tr valign="top">
@@ -699,7 +711,7 @@ function st_plugin_option_updated($option_name, $old_value, $value)
 {
     // List of options that should trigger the success message
     $tracked_options = [
-        'st_tracking_solution', 
+        'st_tracking_solution',
         'st_google_analytics_property_id',
         'st_ga_credentials_json',
         'st_enable_rss_feed',
@@ -709,28 +721,30 @@ function st_plugin_option_updated($option_name, $old_value, $value)
         'st_display_pages'
     ];
 
-    // Only proceed if the option is in the tracked list and the value has changed
-    if (in_array($option_name, $tracked_options)) 
+    // Only proceed if the option is in the tracked list
+    if (in_array($option_name, $tracked_options))
     {
-        // Trim and compare to avoid false positives due to spaces or line breaks
-      if (is_array($value)) 
-      {
-            $old_value = array_map('trim', $old_value);
-            $value = array_map('trim', $value);
-      } 
-      else 
-      {
-            $old_value = trim($old_value);
-            $value = trim($value);
-      }
+        // Handle both arrays and strings
+        $value_changed = false;
+        if (is_array($value) && is_array($old_value)) {
+            // Sort both arrays to ensure the comparison is order-independent
+            sort($value);
+            sort($old_value);
+            // Compare arrays
+            $value_changed = $value !== $old_value;
+        } else {
+            // Compare scalar values after trimming
+            $value_changed = trim((string)$old_value) !== trim((string)$value);
+        }
 
-      if ($old_value !== $value) 
-      {
+        // Trigger the message if the value has changed
+        if ($value_changed) {
             st_add_admin_message('Settings successfully saved', 'success');
-      }
+        }
     }
 }
 add_action('update_option', 'st_plugin_option_updated', 10, 3);
+
 
 
 ////////////////////////////////////////////////
@@ -886,25 +900,27 @@ function st_get_page_views_from_google_analytics($total)
 
 
 ////////////////////////////////////////
-function st_increment_page_views($post_id)
+function st_increment_page_views($post_id) 
 {
-    // Only run this for single posts/pages
-    if (!is_single() || empty($post_id)) 
+    // Verhindere die Ausführung in der Admin-Oberfläche oder während des Logins
+    if (is_admin() || is_login_page()) 
     {
         return;
     }
 
-    // Try to get the view count from cache
+    // Nur ausführen, wenn es sich um einen einzelnen Beitrag oder eine Seite handelt
+    if (!is_single() && !is_page()) 
+    {
+        return;
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'st_custom_track_post_views';
     $cache_key = "st_page_views_{$post_id}";
     $cached_views = wp_cache_get($cache_key);
 
     if ($cached_views === false) 
     {
-        // No cached value, so increment the view count
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'st_custom_track_post_views';
-
-        // Insert a new row into the custom table
         $wpdb->insert(
             $table_name,
             [
@@ -919,26 +935,29 @@ function st_increment_page_views($post_id)
             ]
         );
 
-        // Update the meta value for page views
         $current_views = get_post_meta($post_id, 'st_page_views', true);
         $current_views = $current_views ? (int)$current_views : 0;
         $new_views = $current_views + 1;
         update_post_meta($post_id, 'st_page_views', $new_views);
 
-        // Cache the new view count for future use
         wp_cache_set($cache_key, $new_views, '', 3600); // Cache for 1 hour
     }
 }
 
-// Hook into WordPress to track views when the header is loaded
+// Füge eine Funktion hinzu, um zu prüfen, ob es sich um die Login-Seite handelt
+function is_login_page() 
+{
+    return in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-register.php']);
+}
+
 add_action('wp_head', function() 
 {
-    if (is_single()) 
-    {
-        global $post;
+    global $post;
+    if (isset($post) && $post->ID) {
         st_increment_page_views($post->ID);
     }
 });
+
 
 
 
@@ -1031,11 +1050,10 @@ function st_display_sustainability_rating($content)
 			'B'  => '20% Lower than Global Average | 🌱 Eco-Friendly',
 			'C'  => '10% Lower than Global Average | 🌱 Eco-Friendly',
 			'D'  => 'in the Global Average',
-			'E'  => '10% More than Global Average',
-			'F'  => '20% More than Global Average',
+			'E'  => '20% More than Global Average',
        		     ];
        // Append the rating overview to the content
-       $content .= "<div class='sustainability-rating {$position}'>Rating:{$rating} | {$globalRating[$rating]} </div>";
+       $content .= "<div class='sustainability-rating {$position} {$rating}'>Rating: {$rating} | {$globalRating[$rating]} </div>";
    }
     }
 

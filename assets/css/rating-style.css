@@ -13,4 +13,24 @@
 .top_left { top: 10px; left: 10px; }
 .top_right { top: 10px; right: 10px; }
 
+.B 
+{ 
+  background-color: #FFFF00; 
+} /* Gelb */
+.C 
+{ 
+  background-color: #FFA500; 
+} /* Orange */
+.D 
+{ 
+  background-color: #FF7F50; 
+} /* Koralle */
+.E 
+{ 
+  background-color: #FF0000; 
+} /* Rot */
+.F 
+{ 
+  background-color: #8B0000; 
+} /* Dunkelrot */
 

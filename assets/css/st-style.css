@@ -161,4 +161,14 @@
 {
     background-color: #005a87;
 }
+.flex-container 
+{
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0;
+}
 
+.flex-container li {
+    margin-right: 20px; /* Abstand zwischen den Checkboxen */
+}
